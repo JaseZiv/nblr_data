@@ -2,9 +2,9 @@ name: Update NBL Data
 
 # At 22:45UTC daily (08:45 Melbourne time).
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   schedule:
     - cron: "45 22 * * *"
 
@@ -12,6 +12,8 @@ jobs:
   update-nbl:
     runs-on: macOS-latest
     env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
