@@ -1,0 +1,28 @@
+name: Update NBL Data
+
+# At 22:45UTC daily (08:45 Melbourne time).
+on:
+  # push:
+  #   branches:
+  #     - main
+  schedule:
+    - cron: "45 22 * * *"
+
+jobs:
+  update-nbl:
+    runs-on: macOS-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: r-lib/actions/setup-r@master
+      - name: Package Installation
+        run: Rscript -e 'install.packages(c("remotes", "dplyr", "purrr"))'
+      - name: nblscrapeR Installation
+        run: Rscript -e 'remotes::install_github("JaseZiv/nblscrapeR")'
+      - name: Update results
+        run: Rscript -e 'source(file.path("update", "update_results.R"), echo = TRUE)'
+      - name: Update matches
+        run: Rscript -e 'source(file.path("update", "update_matches.R"), echo = TRUE)'
+      - name: Update stats
+        run: Rscript -e 'source(file.path("update", "update_stats.R"), echo = TRUE)'
