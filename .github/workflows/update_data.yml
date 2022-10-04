@@ -22,6 +22,8 @@ jobs:
         run: Rscript -e 'install.packages(c("remotes", "dplyr", "purrr"))'
       - name: nblscrapeR Installation
         run: Rscript -e 'remotes::install_github("JaseZiv/nblscrapeR")'
+      - name: nblR Installation
+        run: Rscript -e 'remotes::install_github("JaseZiv/nblR")'
       - name: Update results
         run: Rscript -e 'source(file.path("update", "update_results.R"), echo = TRUE)'
       - name: Update matches
