@@ -51,7 +51,12 @@ results <- matches_df %>%
 
 # saveRDS(results, "results.rds")
 
+# temporarily, while the playoff schedules are dynamicaly being set as they progress, will need to 
+# manually filter out some rows which are throwing errors with too many isHomCompetitor values == 1.
+# once the finals are scheduled/played, I can remove this, but for now, dynamically filter the date:
 
+results <- results %>% 
+  filter(matchTime < '2023-02-12 18:00:00')
 
 results_meta <- results %>% 
   select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
