@@ -56,7 +56,7 @@ results <- matches_df %>%
 # once the finals are scheduled/played, I can remove this, but for now, dynamically filter the date:
 
 results <- results %>% 
-  filter(matchTime < '2023-02-12 18:00:00')
+  filter(matchTime < '2023-02-15 19:30:00')
 
 results_meta <- results %>% 
   select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
