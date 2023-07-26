@@ -13,7 +13,8 @@ get_seasons <- function() {
   return(seasons)
 }
 
-seasons <- get_seasons
+seasons <- get_seasons()
+# save_nblr(df=seasons, file_name = "seasons", release_tag = "league")
 
 
 
