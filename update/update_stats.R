@@ -5,9 +5,9 @@ library(purrr)
 # results_wide <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/match_results/results_wide.rds"))
 # results_wide <- results_wide %>% select(match_id, season)
 
-current_season <- "2022-2023"
+current_season <- "2023-2024"
 
-games <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/match_lists/match_lists_2022_23.rds"))
+games <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/match_lists/match_lists_2023_24.rds"))
 
 #==========================================================================
 # Play-by-Play ------------------------------------------------------------
