@@ -14,6 +14,9 @@ games <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/mat
 
 # get current
 pbp_df <- nblscrapeR::parse_pbp(games)
+pbp_df <- pbp_df |> 
+  mutate(s1 = as.integer(s1),
+         s2 = as.integer(s2))
 
 # get all existing
 pbp_all <- nblR::nbl_pbp()
