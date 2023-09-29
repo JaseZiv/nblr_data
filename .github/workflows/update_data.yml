@@ -2,9 +2,9 @@ name: Update NBL Data
 
 # At 22:45UTC daily (08:45 Melbourne time).
 on:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   schedule:
     - cron: "45 22 * * *"
 
