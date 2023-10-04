@@ -35,6 +35,9 @@ if(nrow(pbp_df) >= nrow(pbp_all)) {
   print("Something has gone wrong with the parsing of play by play data")
 }
 
+# also want a process that writes the current season's pbp data for the win probability app
+
+
 rm(pbp_df, pbp_all, pbp_previous);gc()
 
 
