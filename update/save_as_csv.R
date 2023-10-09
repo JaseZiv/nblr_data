@@ -42,22 +42,41 @@ read_from_rel <- function(file_name, ext, release_tag) {
   
 }
 
-
-team_box <- read_from_rel(file_name = "box_team", ext = "rds", release_tag = "box_team")
-save_to_rel(df=team_box, file_name = "box_team", ext = "csv", release_tag = "box_team")
-
-
-player_box <- read_from_rel(file_name = "box_player", ext = "rds", release_tag = "box_player")
-save_to_rel(df=player_box, file_name = "box_player", ext = "csv", release_tag = "box_player")
-
-
-pbp <- read_from_rel(file_name = "pbp", ext = "rds", release_tag = "pbp")
-save_to_rel(df=player_box, file_name = "pbp", ext = "csv", release_tag = "pbp")
-
+#=================================================================================================================
+# Results -----------------------------------------------------------------
 results <- read_from_rel(file_name = "results_wide", ext = "rds", release_tag = "match_results")
 save_to_rel(df=results, file_name = "results_wide", ext = "csv", release_tag = "match_results")
 
+#=================================================================================================================
+# Team Box ----------------------------------------------------------------
+team_box <- read_from_rel(file_name = "box_team", ext = "rds", release_tag = "box_team")
+team_box <- team_box |> 
+  left_join(results |> select(match_id, match_time),
+            by = c("match_id")) |> 
+  relocate(match_time, .after = season)
 
+save_to_rel(df=team_box, file_name = "box_team", ext = "csv", release_tag = "box_team")
+
+
+#=================================================================================================================
+# Player Box --------------------------------------------------------------
+player_box <- read_from_rel(file_name = "box_player", ext = "rds", release_tag = "box_player")
+
+player_box <- player_box |> 
+  left_join(results |> select(match_id, match_time),
+            by = c("match_id")) |> 
+  relocate(match_time, .after = season)
+save_to_rel(df=player_box, file_name = "box_player", ext = "csv", release_tag = "box_player")
+
+
+#=================================================================================================================
+# PBP ---------------------------------------------------------------------
+pbp <- read_from_rel(file_name = "pbp", ext = "rds", release_tag = "pbp")
+save_to_rel(df=player_box, file_name = "pbp", ext = "csv", release_tag = "pbp")
+
+
+#=================================================================================================================
+# Shots -------------------------------------------------------------------
 shots <- read_from_rel(file_name = "shots", ext = "rds", release_tag = "shots")
 save_to_rel(df=shots, file_name = "shots", ext = "csv", release_tag = "shots")
 
