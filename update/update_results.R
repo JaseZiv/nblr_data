@@ -47,7 +47,8 @@ results <- matches_df %>%
   dplyr::select(-images) %>% 
   dplyr::left_join(seasons, by = c("competitionId")) %>% 
   dplyr::select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
-                teamId, teamName, teamNickname, scoreString, isHomeCompetitor, atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration)
+                teamId, teamName, teamNickname, scoreString, isHomeCompetitor, atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration) |> 
+  distinct(matchId, teamName, .keep_all = T)
 
 # saveRDS(results, "results.rds")
 
