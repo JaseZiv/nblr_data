@@ -3,6 +3,7 @@
 library(nblscrapeR)
 library(dplyr)
 library(purrr)
+library(tidyr)
 
 current_season <- "2023-2024"
 
@@ -15,39 +16,83 @@ seas <- seasons %>%
 
 
 matches_df_existing <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/league/matches_df.rds"))
-matches_df_existing <- matches_df_existing %>% dplyr::filter(competitionId != seas)
-
+matches_df_existing <- matches_df_existing %>% dplyr::filter(season != current_season)
 
 
 matches_df_new <- seas %>% 
   purrr::map_df(nblscrapeR::get_matches)
 
-matches_df <- matches_df_existing %>% 
+
+
+
+get_comp_meta <- function(x) {
+  x |> 
+    data.frame() |> 
+    select(teamId, teamName, teamNickname, scoreString, isHomeCompetitor)
+}
+
+
+competitors_df <- matches_df_new |> 
+  mutate(matchId = as.integer(matchId)) |> 
+  select(matchId, competitors)
+
+
+comps <- data.frame()
+
+for(i in 1:nrow(competitors_df)) {
+  id <- competitors_df$matchId[i]
+  comp_df <- get_comp_meta(competitors_df$competitors[i])
+  comp_df$matchId <- id
+  comps <- bind_rows(comps, comp_df)
+}
+
+
+comps <- comps |> 
+  select(matchId, teamId, teamName, teamNickname, scoreString, isHomeCompetitor) |> 
+  mutate(across(c(teamId, teamName, teamNickname, scoreString, isHomeCompetitor), as.character))
+
+
+
+matches_df_new <- matches_df_new |> 
+  mutate(across(c(matchId, matchNumber, leagueId, competitionId), .fns = as.integer)) |> 
+  mutate(across(c(roundNumber, matchName, matchStatus, matchTime, matchTimeUTC, matchType), .fns = as.character)) |>
+  dplyr::left_join(seasons, by = c("competitionId")) |> 
+  tidyr::unnest(venue) |>
+  dplyr::left_join(comps, by = "matchId") |> 
+  dplyr::select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
+         teamId, teamName, teamNickname, scoreString, isHomeCompetitor, atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration) |> 
+  mutate(across(c(venueName, atNeutralVenue), as.character)) |> 
+  mutate(across(c(atNeutralVenue, extraPeriodsUsed, attendance, duration), as.integer))
+
+
+
+
+
+
+matches_df <- matches_df_existing |> 
   dplyr::bind_rows(matches_df_new) %>% 
-  dplyr::arrange(matchTimeUTC)
+  dplyr::arrange(matchTimeUTC) |> 
+  dplyr::select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
+                teamId, teamName, teamNickname, scoreString, isHomeCompetitor, atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration)
 
 
 nblscrapeR::save_nblr(matches_df, "matches_df", "league")
 
 
-venues <- matches_df %>% 
-  dplyr:: select(venue) %>% tidyr::unnest(venue) %>% 
-  dplyr::select(venueId, venueName) %>% 
-  dplyr::distinct()
+# venues <- matches_df %>% 
+#   # dplyr:: select(venue) %>% tidyr::unnest(venue) %>% 
+#   dplyr::select(venueId, venueName) %>% 
+#   dplyr::distinct()
+# 
+# 
+# test <- bbb |> 
+#   select(-`website`, -`externalId`) |> 
+#   unnest(competitors)
 
 
 results <- matches_df %>% 
   # there was a match in 2006 where only one team (36ers were listed so will remove this)
-  dplyr::filter(matchId != 36166) %>% 
-  dplyr::select(-externalId, -venue) %>% 
-  dplyr::left_join(venues, by = "venueId") %>% 
-  dplyr::select(matchId, competitionId, venueName, roundNumber, matchNumber, matchStatus, matchName,
-                atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration, matchType, competitors) %>%
-  tidyr::unnest(competitors) %>% 
-  dplyr::select(-images) %>% 
-  dplyr::left_join(seasons, by = c("competitionId")) %>% 
-  dplyr::select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
-                teamId, teamName, teamNickname, scoreString, isHomeCompetitor, atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration) |> 
+  dplyr::filter(matchId != 36166) |> 
   distinct(matchId, teamName, .keep_all = T)
 
 # saveRDS(results, "results.rds")
