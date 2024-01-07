@@ -11,7 +11,7 @@ current_season <- "2023-2024"
 seasons <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/league/seasons.rds"))
 
 seas <- seasons %>% 
-  # dplyr::filter(season == current_season) %>%
+  dplyr::filter(season == current_season) %>%
   dplyr::pull(competitionId)
 
 
