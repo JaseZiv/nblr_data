@@ -53,11 +53,17 @@ comps <- comps |>
 
 
 
+venues <- matches_df_new$venue
+venues <- venues |> select(venueId, venueName) |> 
+  mutate(venueId = as.character(venueId)) |> 
+  distinct()
+
 matches_df_new <- matches_df_new |> 
+  mutate(venueId = as.character(venueId)) |> 
   mutate(across(c(matchId, matchNumber, leagueId, competitionId), .fns = as.integer)) |> 
   mutate(across(c(roundNumber, matchName, matchStatus, matchTime, matchTimeUTC, matchType), .fns = as.character)) |>
   dplyr::left_join(seasons, by = c("competitionId")) |> 
-  tidyr::unnest(venue) |>
+  left_join(venues, by = c("venueId")) |>
   dplyr::left_join(comps, by = "matchId") |> 
   dplyr::select(matchId, season, venueName, roundNumber, matchNumber, matchStatus, matchName, matchType,
          teamId, teamName, teamNickname, scoreString, isHomeCompetitor, atNeutralVenue, extraPeriodsUsed, matchTime, matchTimeUTC, attendance, duration) |> 
