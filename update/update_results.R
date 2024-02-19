@@ -22,6 +22,8 @@ matches_df_existing <- matches_df_existing %>% dplyr::filter(season != current_s
 matches_df_new <- seas %>% 
   purrr::map_df(nblscrapeR::get_matches)
 
+matches_df_new <- matches_df_new |> 
+  filter(venueId != "0")
 
 
 
