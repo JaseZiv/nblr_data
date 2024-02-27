@@ -105,6 +105,14 @@ results <- matches_df %>%
 
 # saveRDS(results, "results.rds")
 
+# as playoffs approach, the NBL will put games in for teams that have qualified, but will not have an away team
+# for those games. These will be identifiable by the fact that there is only one row for each matchId:
+part_scheduled <- results |> 
+  count(matchId) |> filter(n == 1) |> pull(matchId)
+
+results <- results |> 
+  filter(!matchId %in% part_scheduled)
+
 # temporarily, while the playoff schedules are dynamicaly being set as they progress, will need to 
 # manually filter out some rows which are throwing errors with too many isHomCompetitor values == 1.
 # once the finals are scheduled/played, I can remove this, but for now, dynamically filter the date:
