@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: r-lib/actions/setup-r@v2
       - name: Package Installation
-        run: Rscript -e 'install.packages(c("remotes", "dplyr", "purrr", "piggyback"))'
+        run: Rscript -e 'install.packages(c("remotes", "dplyr", "purrr", "piggyback", "tidyr", "httr"))'
       - name: nblscrapeR Installation
         run: Rscript -e 'remotes::install_github("JaseZiv/nblscrapeR")'
       - name: nblR Installation
@@ -32,3 +32,5 @@ jobs:
         run: Rscript -e 'source(file.path("update", "update_stats.R"), echo = TRUE)'
       - name: Update stats csv
         run: Rscript -e 'source(file.path("update", "save_as_csv.R"), echo = TRUE)'
+      - name: Update stats csv
+        run: Rscript -e 'source(file.path("update", "update_nbl_player_bios.R"), echo = TRUE)'
