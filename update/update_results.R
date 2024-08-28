@@ -5,7 +5,7 @@ library(dplyr)
 library(purrr)
 library(tidyr)
 
-current_season <- "2023-2024"
+current_season <- "2024-2025"
 
 
 seasons <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/league/seasons.rds"))

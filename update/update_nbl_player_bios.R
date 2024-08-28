@@ -50,7 +50,7 @@ parse_teams <- function(team_list) {
 
 source(here::here("R", "environment.R"))
 
-current_season <- "2023-2024"
+current_season <- "2024-2025"
 
 matches_df <- readRDS(url("https://github.com/JaseZiv/nblr_data/releases/download/league/matches_df.rds")) |> 
   filter(season == current_season)
