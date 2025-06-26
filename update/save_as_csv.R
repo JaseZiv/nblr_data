@@ -65,7 +65,10 @@ player_box <- read_from_rel(file_name = "box_player", ext = "rds", release_tag =
 player_box <- player_box |> 
   left_join(results |> select(match_id, match_time),
             by = c("match_id")) |> 
-  relocate(match_time, .after = season)
+  relocate(match_time, .after = season) |> 
+  mutate(minutes = ifelse(is.na(minutes), "0", minutes)) |> 
+  mutate(minutes = ifelse(grepl(":", minutes), minutes, paste0(minutes, ":00"))) |> 
+  mutate(seconds = as.numeric(lubridate::seconds(lubridate::ms(minutes))))
 save_to_rel(df=player_box, file_name = "box_player", ext = "csv", release_tag = "box_player")
 
 
