@@ -6,10 +6,6 @@ library(purrr)
 library(tidyr)
 
 
-# # the below will get season metadata... something looks off here though as there's typically only 100 matches
-# # for each of the regular seasons, however there should be more tna that... it's a start/reference point nonetheless:
-# seasons <- jsonlite::fromJSON("https://prod.rosetta.nbl.com.au/get/nbl/seasons")
-# seasons_df <- seasons$data
 
 all_season_existing <- readRDS("matches_df.rds")
 current_season <- "2025-2026"
@@ -25,38 +21,6 @@ already_scraped <- all_season_existing |> filter(match_status == "complete") |> 
 existing_results_wide <- nblR::nbl_results("wide")
 
 
-# matches_df_new <- jsonlite::fromJSON("https://prod.rosetta.nbl.com.au/get/nbl/seasons/current")
-# matches_df_new <- matches_df_new$data$matches |> pluck(1)
-# matches_df_new <- matches_df_new |> unnest(cols = c(home_team, away_team, venue), names_sep = "_")
-
-
-get_season_matches_df <- function() {
-  headers = c(
-    accept = "*/*",
-    `accept-language` = "en-AU,en-GB;q=0.9,en-US;q=0.8,en;q=0.7",
-    `if-none-match` = 'W/"6a06e-SmGRelgnopkYbbOB47kYewX6VLI"',
-    origin = "https://nbl.com.au",
-    priority = "u=1, i",
-    referer = "https://nbl.com.au/",
-    `sec-ch-ua` = '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
-    `sec-ch-ua-mobile` = "?0",
-    `sec-ch-ua-platform` = '"macOS"',
-    `sec-fetch-dest` = "empty",
-    `sec-fetch-mode` = "cors",
-    `sec-fetch-site` = "same-site",
-    `user-agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-  )
-  
-  matches_json <- httr::GET(url = "https://prod.rosetta.nbl.com.au/get/nbl/matches/in/season/2025", httr::add_headers(.headers=headers)) |> 
-    httr::content(as = "text")
-  
-  
-  matches_df <- matches_json |> jsonlite::fromJSON()
-  matches_df <- matches_df$data
-  # matches_df <- matches_df |> unnest(cols = c(home_team, away_team, venue), names_sep = "_")
-  return(matches_df)
-}
-
 
 matches_df_new <- get_season_matches_df() |> 
   unnest(cols = c(home_team, away_team, venue), names_sep = "_")
@@ -64,40 +28,6 @@ matches_df_new <- get_season_matches_df() |>
 
 
 
-get_each_match <- function(match_id) {
-  # Sys.sleep(2)
-  # each_game <- jsonlite::fromJSON(paste0("https://prod.rosetta.nbl.com.au/get/match/", match_id))
-  # each_game <- each_game$data
-  
-  
-  Sys.sleep(2)
-  # each_game <- jsonlite::fromJSON(paste0("https://prod.rosetta.nbl.com.au/get/match/", match_id))
-  headers = c(
-    accept = "*/*",
-    `accept-language` = "en-AU,en-GB;q=0.9,en-US;q=0.8,en;q=0.7",
-    origin = "https://nbl.com.au",
-    priority = "u=1, i",
-    referer = "https://nbl.com.au/",
-    `sec-ch-ua` = '"Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"',
-    `sec-ch-ua-mobile` = "?0",
-    `sec-ch-ua-platform` = '"macOS"',
-    `sec-fetch-dest` = "empty",
-    `sec-fetch-mode` = "cors",
-    `sec-fetch-site` = "same-site",
-    `user-agent` = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-  )
-  
-  each_game <- httr::GET(url = paste0("https://prod.rosetta.nbl.com.au/get/match/", match_id, "/live/all"), 
-                         httr::add_headers(.headers=headers)) |> 
-    httr::content(as = "text")
-  
-  
-  each_game <- each_game |> jsonlite::fromJSON()
-  # each_game <- each_game$data 
-  each_game <- each_game$data
-  return(each_game)
-  
-}
 
 
 new_matches <- matches_df_new |> filter(tolower(match_status) == "complete") |> pull(id)
