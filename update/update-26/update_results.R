@@ -23,7 +23,8 @@ existing_results_wide <- nblR::nbl_results("wide")
 
 
 matches_df_new <- get_season_matches_df() |> 
-  unnest(cols = c(home_team, away_team, venue), names_sep = "_")
+  unnest(cols = c(home_team, away_team, venue), names_sep = "_") |> 
+  filter(round != "NBAxNBL")
 
 
 
@@ -31,7 +32,7 @@ matches_df_new <- get_season_matches_df() |>
 
 
 new_matches <- matches_df_new |> filter(tolower(match_status) == "complete") |> pull(id)
-new_matches <- new_matches[!new_matches %in% (all_season_existing |> filter(tolower(match_status) == "complete") |> pull(id))]
+new_matches <- new_matches[!new_matches %in% (all_season_existing |> filter(tolower(match_status) == "complete") |> pull(external_id))]
 
 all_season <- data.frame()
 
@@ -49,7 +50,7 @@ if(any(grepl("live_match_data", names(all_season)))) {
 
 
 all_season <- bind_rows(
-  all_season_existing |> filter(!id %in% all_season$id),
+  all_season_existing |> mutate(id = external_id) |> filter(!id %in% all_season$id),
   all_season
 ) |> 
   arrange(as.Date(start_time_datetime))

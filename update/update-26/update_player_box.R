@@ -92,7 +92,7 @@ player_box_updated <- player_box_updated |>
 
 
 player_box_out <- bind_rows(
-  existing_player_box |> mutate(match_id = as.character(match_id)),
+  existing_player_box |> mutate(match_id = as.character(match_id)) |> filter(season != current_season),
   player_box_updated
 )
 
