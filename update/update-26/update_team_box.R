@@ -5,7 +5,7 @@ all_season <- readRDS("matches_df.rds")
 
 team_box <- all_season |> 
   # head(1) |> 
-  select(id, team_match_statistics) |> 
+  select(id, team_match_statistics, home_team, away_team) |> 
   mutate(missing = mapply(length, team_match_statistics)) |> 
   filter(missing > 0) |> select(-missing) |>  
   mutate(team_match_statistics = map(team_match_statistics, ~ select(.x, -match))) |>
@@ -21,7 +21,7 @@ team_box <- all_season |>
 
 team_meta <- all_season |> 
   filter(id %in% team_box$id) |> 
-  select(id, home_team, away_team, team_match_statistics) |> 
+  select(id, home_team, away_team, home_team_score=home_score, away_team_score=away_score, team_match_statistics) |> 
   mutate(team_match_statistics = map(team_match_statistics, ~ select(.x, -match))) |>
   unnest(c(home_team, away_team, team_match_statistics), names_sep = "_") |> 
   filter(team_match_statistics_period == "0") |> 
@@ -31,11 +31,13 @@ team_meta <- team_meta |>
   select(id, team_id=home_team_id, opp_name=away_team_name, opp_short_name=away_team_team_code, opp_score=away_team_score, opp_full_score=away_team_score) |> 
   mutate(home_away = "home") |> 
   bind_rows(
-    team_meta |> 
+    team_meta2 |> 
       select(id, team_id=away_team_id, opp_name=home_team_name, opp_short_name=home_team_team_code, opp_score=home_team_score, opp_full_score=home_team_score) |> 
       mutate(home_away = "away")
-  ) 
-  
+  ) |> 
+  mutate(opp_score = as.numeric(opp_score),
+         opp_full_score = as.numeric(opp_full_score))
+
 
 
 
@@ -98,15 +100,15 @@ names(team_box) <- gsub("team_match_statistics_", "", names(team_box))
 
 
 qtr_points <- team_box |> 
-  select(-external_id) |> 
+  # select(-external_id) |> 
   filter(period != "0") |> 
   mutate(period_for_score = case_when(
     as.numeric(period) <= 4 ~ paste0("p", period, "_score"),
     as.numeric(period) > 4 ~ "ot_score"
   )) |> 
-  group_by(id, id1, period_for_score) |> 
+  group_by(id, team, period_for_score) |> 
   summarise(points = sum(points, na.rm = T), .groups = "drop") |> 
-  select(id, id1, points, period_for_score) |>
+  select(id, team, points, period_for_score) |>
   pivot_wider(names_from = period_for_score, values_from = points)
 
 if(!any(grepl("ot_score", names(qtr_points)))) {
@@ -118,22 +120,22 @@ team_box_updated <- team_box |>
   mutate(season = current_season) |> 
   select(-external_id) |> 
   left_join(
-    team_meta, by = c("id", "id1" = "team_id")
+    team_meta, by = c("id", "team" = "team_id")
   ) |> 
   left_join(
-    qtr_points, by = c("id", "id1")
+    qtr_points, by = c("id", "team")
   )
 
 team_box_updated <- team_box_updated |> 
   filter(period == "0") |> 
   mutate(fouls_total=personal_fouls+technical_fouls) |> 
   select(
-    match_id = id, season, home_away, name, short_name=team_nickname, code=team_code, score=score, full_score=score, opp_name, opp_short_name,
+    match_id = id, season, home_away, name, short_name=team_nickname, code=team_code, score=points, full_score=points, opp_name, opp_short_name,
     opp_score, opp_full_score, p1_score, p2_score, p3_score, p4_score, fouls, minutes, field_goals_made, field_goals_attempted, field_goals_percentage,
     three_pointers_made=three_points_made, three_pointers_attempted=three_points_attempted, three_pointers_percentage=three_points_percentage,
     two_pointers_made=two_points_made, two_pointers_attempted=two_points_attempted, two_pointers_percentage=two_points_percentage,
     free_throws_made, free_throws_attempted, free_throws_percentage, rebounds_defensive=defensive_rebounds, rebounds_offensive=offensive_rebounds, rebounds_total=rebounds,
-    assists, turnovers, steals, blocks, fouls_personal=personal_fouls, points=score, ot_score, fouls_total
+    assists, turnovers, steals, blocks, fouls_personal=personal_fouls, points, ot_score, fouls_total
   )
 
 

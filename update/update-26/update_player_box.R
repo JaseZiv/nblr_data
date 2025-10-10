@@ -20,7 +20,7 @@ existing_player_box <- nblR::nbl_box_player()
 
 team_meta <- all_season |> 
   filter(id %in% player_box$id) |> 
-  select(id, home_team, away_team, player_match_statistics) |> 
+  select(id, home_team, away_team, home_team_score=home_score, away_team_score=away_score, player_match_statistics) |> 
   mutate(player_match_statistics = map(player_match_statistics, ~ select(.x, -match))) |>
   mutate(player_match_statistics = map(player_match_statistics, ~ mutate(.x, field_goals_made = as.integer(field_goals_made)))) |> 
   unnest(c(home_team, away_team, player_match_statistics), names_sep = "_") |> 

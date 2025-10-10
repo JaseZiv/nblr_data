@@ -110,8 +110,8 @@ final_out <- pbp_start |>
 
 
 final_final_out <- bind_rows(
-  existing_pbp |> mutate(match_id = as.character(match_id)), 
-  final_out |> mutate(home_away = as.character(home_away))
+  existing_pbp |> mutate(match_id = as.character(match_id)) |> filter(season != current_season), 
+  final_out |> mutate(home_away = as.character(home_away)) |> filter(season == current_season)
 )
 
 
@@ -133,7 +133,7 @@ shots_out <- bind_rows(
 )
 
 
-
+shots <- new_shots
 
 
 library(ggplot2)
@@ -213,6 +213,19 @@ sportyR::geom_basketball(league = "fiba") +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "white"))
 
+
+
+shots |> 
+  ggplot() + 
+  geom_point(data = shots, aes(x = x/5, y = y/10), color = "red", alpha = 0.6, size = 2) +
+  facet_wrap(~ team_name)
+
+
+
+shots |> 
+  ggplot() + 
+  geom_point(aes(x = x, y = y), color = "red", alpha = 0.6, size = 2) +
+  facet_wrap(~ team_name)
 
 
 

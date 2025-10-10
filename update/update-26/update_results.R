@@ -61,7 +61,7 @@ saveRDS(all_season, "matches_df.rds")
 
 match_meta_exploded <- all_season |> 
   # select(id, external_id, date_updated, start_time_datetime, match_type, home_score, away_score, season, venue, ) |> 
-  select(-last_nexus_update, -team_match_statistics, -player_match_statistics, -contains("broadcaster"), -play_by_play, -team_summary_statistics) |> 
+  select(-team_match_statistics, -player_match_statistics, -contains("broadcaster"), -play_by_play) |> 
   unnest(season, names_sep = "_") |> 
   unnest(venue, names_sep = "_") |> 
   unnest(home_team, names_sep = "_") |> 
@@ -98,9 +98,8 @@ extra_time <- team_box |>
 
 # now we need to make the 2025-26 season data backward compatible
 matches_df_new <- match_meta_exploded |> 
-  # left_join(extra_time, by = "id") |>
-  mutate(match_id = as.integer(external_media_id),
-         season = "2025-2026",
+  left_join(extra_time, by = "id") |>
+  mutate(season = "2025-2026",
          round_number = round) |> 
   arrange(start_time) |> 
   mutate(match_number = row_number()) |> 
@@ -121,9 +120,9 @@ matches_df_new <- match_meta_exploded |>
          external_id, external_media_id, season, venue_name, round_number, match_number, match_status, match_name, match_type, home_team_id, 
          home_team_name, home_team_nickname, home_score_string, away_team_id, away_team_name, away_team_nickname, away_score_string, 
          at_neutral_venue, 
-         # extra_periods_used,
+         extra_periods_used,
          match_time, match_time_utc, attendance, 
-         # duration, 
+         duration,
          home_team_team_logo, home_team_external_team_logo, away_team_team_logo, away_team_external_team_logo)
 
 
