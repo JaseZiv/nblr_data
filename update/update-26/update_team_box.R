@@ -31,7 +31,7 @@ team_meta <- team_meta |>
   select(id, team_id=home_team_id, opp_name=away_team_name, opp_short_name=away_team_team_code, opp_score=away_team_score, opp_full_score=away_team_score) |> 
   mutate(home_away = "home") |> 
   bind_rows(
-    team_meta2 |> 
+    team_meta |> 
       select(id, team_id=away_team_id, opp_name=home_team_name, opp_short_name=home_team_team_code, opp_score=home_team_score, opp_full_score=home_team_score) |> 
       mutate(home_away = "away")
   ) |> 

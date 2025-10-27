@@ -86,12 +86,17 @@ team_box <- all_season |>
 #   group_by(id) |> 
 #   summarise(extra_periods_used = max(as.numeric(team_match_statistics_period)) - 4)
 
+# b1d40d91-4bef-11f0-aacf-5b42e4531c6f
+
 extra_time <- team_box |> 
   distinct(id, team_match_statistics_minutes, team_match_statistics_period) |> 
-  group_by(id) |> 
-  summarise(duration = max(team_match_statistics_minutes, na.rm = T),
-            extra_periods_used = ((team_match_statistics_minutes[team_match_statistics_period == "0"] / 5) - 40) / 5) |> 
-  ungroup()
+  filter(team_match_statistics_period == "0") |> 
+  mutate(team_match_statistics_minutes = ifelse(team_match_statistics_minutes < 200, 200, team_match_statistics_minutes)) |> 
+  arrange(desc(team_match_statistics_minutes)) |> 
+  distinct(id, .keep_all = T) |> 
+  rename(duration = team_match_statistics_minutes) |> 
+  group_by(id, duration) |> 
+  summarise(extra_periods_used = round(((duration / 5) - 40) / 5), .groups = "drop")
 
 
 
@@ -133,7 +138,7 @@ updated <- bind_rows(
 )
 
 
-library(nblscrapeR)
+# library(nblscrapeR)
 save_nblr(df=updated, file_name = "results_wide", release_tag = "match_results")
 
 

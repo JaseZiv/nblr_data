@@ -67,8 +67,15 @@ player_box <- player_box |>
             by = c("match_id")) |> 
   relocate(match_time, .after = season) |> 
   mutate(minutes = ifelse(is.na(minutes), "0", minutes)) |> 
-  mutate(minutes = ifelse(grepl(":", minutes), minutes, paste0(minutes, ":00"))) |> 
-  mutate(seconds = as.numeric(lubridate::seconds(lubridate::ms(minutes))))
+  mutate(minutes = case_when(
+    grepl(":", minutes) ~ minutes,
+    season <= "2024-2025" ~ paste0(minutes, ":00"),
+    TRUE ~ minutes)
+  ) |> 
+  mutate(seconds = case_when(
+    season <= "2024-2025" ~ as.numeric(lubridate::seconds(lubridate::ms(minutes))),
+    season == "2025-2026" ~ round(as.numeric(minutes) * 60)
+  ))
 save_to_rel(df=player_box, file_name = "box_player", ext = "csv", release_tag = "box_player")
 
 

@@ -1,8 +1,13 @@
 
 all_season <- readRDS("matches_df.rds")
+current_season <- "2025-2026"
 
+# there is a game that the json structure is different for, and it's causing all sorts of headaches...
+# for now I'll remove it, knowing that it'll need to be fixed somehow:
+bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69185882ba54")
 
 team_pbp <- all_season |> 
+  filter(!id %in% bad_pbp) |> 
   # head(1) |> 
   select(id, play_by_play) |> 
   mutate(missing = mapply(length, play_by_play)) |> 
@@ -37,6 +42,7 @@ team_meta <- team_meta |>
 
 
 pbp_start <- all_season |> 
+  filter(!id %in% bad_pbp) |> 
   select(id, play_by_play) |> 
   mutate(missing = mapply(length, play_by_play)) |> 
   filter(missing > 0) |> select(-missing) |>  
