@@ -48,22 +48,13 @@ pbp_start <- all_season |>
   filter(missing > 0) |> select(-missing) |>  
   unnest(play_by_play, names_sep = "_") |> 
   unnest() |> 
-  unnest(cols = team, names_sep = "_")
+  unnest(cols = team, names_sep = "_") |> 
+  select(-jersey_number, -first_name, -last_name, -image)
 
 names(pbp_start) <- gsub("play_by_play_", "", names(pbp_start))
 
 existing_pbp <- nblR::nbl_pbp()
 
-names(pbp_start) |> paste0(collapse = ", ")
-"id, match, action_id, period, period_type, score_1, score_2, action_type, sub_type, x, y, clock, shot_clock, timestamp, 
-readable_action_type, system_action_type, id1, external_id, jersey_number, first_name, last_name, image, team_id, 
-team_external_id, team_name, team_team_nickname, team_league, team_gender, team_team_code, team_team_logo, personId, success"
-
-
-names(existing_pbp) |> paste0(collapse = ", ")
-"match_id, season, team_name, team_short_name, home_away, opp_name, opp_short_name, period_type, period, gt, s1, s2, lead, pno, 
-action_type, sub_type, success, scoring, first_name, family_name, shirt_number, scoreboard_name, qualifier, action_number, 
-previous_action"
 
 player_box <- all_season |> 
   # head(1) |> 
@@ -86,15 +77,17 @@ team_meta <- all_season |>
 
 
 team_meta <- team_meta |> 
-  select(id, team_id=home_team_id, team_nickname=home_team_team_nickname, opp_name=away_team_name, opp_short_name=away_team_team_code, opp_team_nickname=away_team_team_nickname, opp_score=away_team_score, opp_full_score=away_team_score) |> 
+  select(id, team_id=home_team_id, team_name=home_team_name, team_nickname=home_team_team_nickname, opp_name=away_team_name, opp_short_name=away_team_team_code, opp_team_nickname=away_team_team_nickname, opp_score=away_team_score, opp_full_score=away_team_score) |> 
   mutate(home_away = "home") |> 
   bind_rows(
     team_meta |> 
-      select(id, team_id=away_team_id, team_nickname=away_team_team_nickname, opp_name=home_team_name, opp_short_name=home_team_team_code, opp_team_nickname=home_team_team_nickname, opp_score=home_team_score, opp_full_score=home_team_score) |> 
+      select(id, team_id=away_team_id, team_name=away_team_name, team_nickname=away_team_team_nickname, opp_name=home_team_name, opp_short_name=home_team_team_code, opp_team_nickname=home_team_team_nickname, opp_score=home_team_score, opp_full_score=home_team_score) |> 
       mutate(home_away = "away")
   ) 
 
 
+player_meta <- player_box |> 
+  distinct(personId=id1, first_name, family_name=last_name, shirt_number=jersey_number)
 
 
 
@@ -103,14 +96,17 @@ pbp_start <- pbp_start |>
   mutate(season = current_season) |>
   left_join(
     team_meta, by = c("id", "team_id")
+  ) |> 
+  left_join(
+    player_meta, by = c("id1" = "personId")
   )
 
 
 final_out <- pbp_start |> 
   mutate(period_type = toupper(period_type),
          lead = score_1 - score_2) |> 
-  select(match_id = id, season, team_name, team_short_name=team_team_nickname, home_away, opp_name, opp_short_name=opp_team_nickname,
-         period_type, period, gt=clock, s1=score_1, s2=score_2, lead, action_type, sub_type, success, first_name, family_name=last_name, shirt_number=jersey_number,
+  select(match_id = id, season, team_name, team_short_name=team_nickname, home_away, opp_name, opp_short_name=opp_team_nickname,
+         period_type, period, gt=clock, s1=score_1, s2=score_2, lead, action_type, sub_type, success, first_name, family_name, shirt_number,
          action_number = action_id, sub_type, x, y, shot_clock, timestamp, readable_action_type, system_action_type, personId, team_id)
 
 

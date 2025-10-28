@@ -72,10 +72,11 @@ player_box <- player_box |>
     season <= "2024-2025" ~ paste0(minutes, ":00"),
     TRUE ~ minutes)
   ) |> 
-  mutate(seconds = case_when(
-    season <= "2024-2025" ~ as.numeric(lubridate::seconds(lubridate::ms(minutes))),
-    season == "2025-2026" ~ round(as.numeric(minutes) * 60)
-  ))
+  mutate(seconds = as.numeric(lubridate::seconds(lubridate::ms(minutes))))
+  # mutate(seconds = case_when(
+  #   season <= "2024-2025" ~ as.numeric(lubridate::seconds(lubridate::ms(minutes))),
+  #   season == "2025-2026" ~ round(as.numeric(minutes) * 60)
+  # ))
 save_to_rel(df=player_box, file_name = "box_player", ext = "csv", release_tag = "box_player")
 
 
