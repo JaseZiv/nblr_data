@@ -4,7 +4,7 @@ current_season <- "2025-2026"
 
 # there is a game that the json structure is different for, and it's causing all sorts of headaches...
 # for now I'll remove it, knowing that it'll need to be fixed somehow:
-bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69185882ba54")
+bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69185882ba54", "b20bc78d-4bef-11f0-9d84-e3ab37cba7df", "b22c940a-4bef-11f0-b917-b31681696f40")
 
 team_pbp <- all_season |> 
   filter(!id %in% bad_pbp) |> 
@@ -12,6 +12,7 @@ team_pbp <- all_season |>
   select(id, play_by_play) |> 
   mutate(missing = mapply(length, play_by_play)) |> 
   filter(missing > 0) |> select(-missing) |>  
+  mutate(play_by_play = map(play_by_play, ~ mutate(.x, period = as.integer(period)))) |> 
   unnest(play_by_play, names_sep = "_") |> 
   unnest()
 
@@ -45,7 +46,8 @@ pbp_start <- all_season |>
   filter(!id %in% bad_pbp) |> 
   select(id, play_by_play) |> 
   mutate(missing = mapply(length, play_by_play)) |> 
-  filter(missing > 0) |> select(-missing) |>  
+  filter(missing > 0) |> select(-missing) |> 
+  mutate(play_by_play = map(play_by_play, ~ mutate(.x, period = as.integer(period)))) |> 
   unnest(play_by_play, names_sep = "_") |> 
   unnest() |> 
   unnest(cols = team, names_sep = "_") |> 

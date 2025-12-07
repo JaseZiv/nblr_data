@@ -83,7 +83,7 @@ player_box_updated <- player_box_updated |>
     three_pointers_made=three_points_made, three_pointers_attempted=three_points_attempted, three_pointers_percentage=three_points_percentage,
     two_pointers_made=two_points_made, two_pointers_attempted=two_points_attempted, two_pointers_percentage=two_points_percentage,
     free_throws_made, free_throws_attempted, free_throws_percentage, rebounds_defensive=defensive_rebounds, rebounds_offensive=offensive_rebounds, rebounds_total=rebounds,
-    assists, turnovers, steals, blocks, fouls_personal=fouls_total, active=participated, photo_t = external_player_image, photo_s=external_player_image,
+    assists, turnovers, steals, blocks, fouls_personal=fouls_total, plus_minus, efficiency, active=participated, photo_t = external_player_image, photo_s=external_player_image,
     
   )
 

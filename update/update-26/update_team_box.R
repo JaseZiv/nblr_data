@@ -116,7 +116,18 @@ if(!any(grepl("ot_score", names(qtr_points)))) {
 }
 
 
-team_box_updated <- team_box |> 
+
+
+
+team_box_fixed <- team_box |> filter(team == id1) |> 
+  bind_rows(
+    team_box |> filter(team == id2) |> 
+      mutate(id1=id2, name=name1, team_nickname=team_nickname1, team_code=team_code1)
+  )
+
+
+
+team_box_updated <- team_box_fixed |> 
   mutate(season = current_season) |> 
   select(-external_id) |> 
   left_join(
