@@ -4,61 +4,10 @@ current_season <- "2025-2026"
 
 # there is a game that the json structure is different for, and it's causing all sorts of headaches...
 # for now I'll remove it, knowing that it'll need to be fixed somehow:
-bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69185882ba54", "b20bc78d-4bef-11f0-9d84-e3ab37cba7df", "b22c940a-4bef-11f0-b917-b31681696f40")
+bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69185882ba54", "b20bc78d-4bef-11f0-9d84-e3ab37cba7df", 
+             "b22c940a-4bef-11f0-b917-b31681696f40", "b204326e-4bef-11f0-a4c0-7d8c00260a69", "b2317162-4bef-11f0-b94a-2b5bbafc199b")
 
-team_pbp <- all_season |> 
-  filter(!id %in% bad_pbp) |> 
-  # head(1) |> 
-  select(id, play_by_play) |> 
-  mutate(missing = mapply(length, play_by_play)) |> 
-  filter(missing > 0) |> select(-missing) |>  
-  mutate(play_by_play = map(play_by_play, ~ mutate(.x, period = as.integer(period)))) |> 
-  unnest(play_by_play, names_sep = "_") |> 
-  unnest()
-
-
-# $ opp_name                  <chr> "New Zealand Breaker…
-# $ opp_short_name            <chr> "Breakers", "36ers",…
-# $ opp_score                 <int> 71, 90, 74, 79, 99, …
-# $ opp_full_score            <int> 71, 90, 74, 79, 99, …
-
-
-team_meta <- all_season |> 
-  filter(id %in% team_pbp$id) |> 
-  select(id, home_team, away_team, home_team_score=home_score, away_team_score=away_score, team_match_statistics) |> 
-  mutate(team_match_statistics = map(team_match_statistics, ~ select(.x, -match))) |>
-  unnest(c(home_team, away_team, team_match_statistics), names_sep = "_") |> 
-  filter(team_match_statistics_period == "0") |> 
-  distinct(id, home_team_id, away_team_id, .keep_all = T)
-
-
-team_meta <- team_meta |> 
-  select(id, team_id=home_team_id, opp_name=away_team_name, opp_short_name=away_team_team_code, opp_score=away_team_score, opp_full_score=away_team_score) |> 
-  mutate(home_away = "home") |> 
-  bind_rows(
-    team_meta |> 
-      select(id, team_id=away_team_id, opp_name=home_team_name, opp_short_name=home_team_team_code, opp_score=home_team_score, opp_full_score=home_team_score) |> 
-      mutate(home_away = "away")
-  ) 
-
-
-pbp_start <- all_season |> 
-  filter(!id %in% bad_pbp) |> 
-  select(id, play_by_play) |> 
-  mutate(missing = mapply(length, play_by_play)) |> 
-  filter(missing > 0) |> select(-missing) |> 
-  mutate(play_by_play = map(play_by_play, ~ mutate(.x, period = as.integer(period)))) |> 
-  unnest(play_by_play, names_sep = "_") |> 
-  unnest() |> 
-  unnest(cols = team, names_sep = "_") |> 
-  select(-jersey_number, -first_name, -last_name, -image)
-
-names(pbp_start) <- gsub("play_by_play_", "", names(pbp_start))
-
-existing_pbp <- nblR::nbl_pbp()
-
-
-player_box <- all_season |> 
+player_meta <- all_season |> 
   # head(1) |> 
   select(id, player_match_statistics) |> 
   mutate(missing = mapply(length, player_match_statistics)) |> 
@@ -66,10 +15,13 @@ player_box <- all_season |>
   mutate(player_match_statistics = map(player_match_statistics, ~ select(.x, -match))) |>
   mutate(player_match_statistics = map(player_match_statistics, ~ mutate(.x, field_goals_made = as.integer(field_goals_made)))) |> 
   unnest(player_match_statistics, names_sep = "_") |> 
-  unnest()
+  unnest() |> 
+  distinct(id, personId=id1, first_name, family_name=last_name, shirt_number=jersey_number, team_id=id2)
+
 
 team_meta <- all_season |> 
-  filter(id %in% player_box$id) |>
+  # filter(id %in% player_box$id) |>
+  filter(match_status == "complete") |> 
   select(id, home_team, away_team, home_team_score=home_score, away_team_score=away_score, player_match_statistics) |> 
   mutate(player_match_statistics = map(player_match_statistics, ~ select(.x, -match))) |>
   mutate(player_match_statistics = map(player_match_statistics, ~ mutate(.x, field_goals_made = as.integer(field_goals_made)))) |> 
@@ -88,20 +40,65 @@ team_meta <- team_meta |>
   ) 
 
 
-player_meta <- player_box |> 
-  distinct(personId=id1, first_name, family_name=last_name, shirt_number=jersey_number)
+pbp_start <- all_season |> 
+  filter(!id %in% bad_pbp) |> 
+  select(id, play_by_play) |> 
+  mutate(missing = mapply(length, play_by_play)) |> 
+  filter(missing > 0) |> select(-missing) |> 
+  mutate(play_by_play = map(play_by_play, ~ mutate(.x, period = as.integer(period)))) |> 
+  unnest(play_by_play, names_sep = "_") |> 
+  unnest() |> 
+  unnest(cols = team, names_sep = "_") |> 
+  select(-jersey_number, -first_name, -last_name, -image)
+
+names(pbp_start) <- gsub("play_by_play_", "", names(pbp_start))
+
+pbp_start <- pbp_start |> 
+  select(id, match, action_id, period, period_type, score_1, score_2, action_type, sub_type, x, y, clock, shot_clock, timestamp,
+         readable_action_type, system_action_type, id1, external_id, personId, success, fixtureId)
+
+
+
+
+pbp_start_dirty <- all_season |> 
+  filter(id %in% bad_pbp) |>
+  # filter(id %in% "b2317162-4bef-11f0-b94a-2b5bbafc199b") |> 
+  select(id, play_by_play) |> 
+  mutate(missing = mapply(length, play_by_play)) |> 
+  filter(missing > 0) |> select(-missing) |> 
+  mutate(play_by_play = map(play_by_play, ~ mutate(.x, period = as.integer(period)))) |> 
+  unnest(play_by_play, names_sep = "_") |> 
+  mutate(play_by_play_player = map(play_by_play_player, ~ if (is.null(.x)) list() else .x)) |> 
+  unnest_wider(play_by_play_player, names_sep = "_") |> 
+  unnest_wider(play_by_play_player_team, names_sep = "_") |> 
+  unnest() |> 
+  rename(id1=play_by_play_player_id)
+
+names(pbp_start_dirty) <- gsub("play_by_play_", "", names(pbp_start_dirty))
+names(pbp_start_dirty) <- gsub("player_", "", names(pbp_start_dirty))
+
+
+pbp_start_dirty <- pbp_start_dirty |> 
+  select(id, match, action_id, period, period_type, score_1, score_2, action_type, sub_type, x, y, clock, shot_clock, timestamp,
+         readable_action_type, system_action_type, id1, external_id, personId, success, fixtureId)
 
 
 
 pbp_start <- pbp_start |> 
-  # select(-external_id, -date_created, -date_updated, -sort, -user_created, -user_updated) |>
-  mutate(season = current_season) |>
-  left_join(
-    team_meta, by = c("id", "team_id")
-  ) |> 
-  left_join(
-    player_meta, by = c("id1" = "personId")
-  )
+  bind_rows(pbp_start_dirty)
+
+
+pbp_start <- pbp_start |> 
+  mutate(season = current_season) |> 
+  left_join(player_meta, by = c("id", "id1" = "personId")) |> 
+  left_join(team_meta, by = c("id", "team_id"))
+
+
+
+
+
+existing_pbp <- nblR::nbl_pbp()
+
 
 
 final_out <- pbp_start |> 
@@ -168,6 +165,14 @@ shots <- shots %>%
     y_half = ifelse(x_m > 14, 15 - y_m, y_m)
   )
 
+
+
+
+
+
+
+
+
 # ---- Court drawing with correct FIBA/NBL specs ----
 nbl_halfcourt <- function() {
   list(
@@ -230,6 +235,106 @@ shots |>
   ggplot() + 
   geom_point(aes(x = x, y = y), color = "red", alpha = 0.6, size = 2) +
   facet_wrap(~ team_name)
+
+
+shots |> 
+  ggplot() + 
+  geom_point(aes(x = x_m, y = y_m), color = "red", alpha = 0.6, size = 2) +
+  facet_wrap(~ team_name)
+
+
+
+
+library(sportyR)
+
+
+shot_data_scaled <- shots %>%
+  # Remove the NAs as they cannot be plotted (you had 3 in each column)
+  filter(!is.na(x)) %>%
+  
+  # Apply the scaling transformation
+  mutate(
+    x_coord_mirrored = if_else(
+      x > 50,
+      100 - x, # Reflect a value like 70 to 30
+      x        # Keep a value like 30 as 30
+    )
+  ) %>%
+  
+  # --- SCALING ---
+  # Scale the mirrored 0-50 range to the standard 0-15 meter width.
+  # X-scale: 15 meters / 50 mirrored units = 0.3
+  # Y-scale: 14 meters / 100 units (full court length) = 0.14
+  mutate(
+    x_coord_meter = x_coord_mirrored * (15 / 100), # Max 50 becomes 15
+    y_coord_meter = y * (14 / 50) # Max 100 becomes 14
+  )
+
+
+
+
+shot_data_scaled |> 
+  ggplot(aes(x=x_coord_meter, y=y_coord_meter)) +
+  geom_point()
+
+
+
+
+# --- 4. Plot the Shot Locations on the FIBA Half-Court ---
+
+# geom_basketball(league = "fiba", display_range = "offense") is the key to drawing the court.
+# "fiba" is the standard for NBL.
+# "offense" draws a single half-court.
+
+court_plot <- ggplot(data = shot_data_scaled) +
+  
+  # Draw the FIBA court (NBL) half-court background
+  # The default sportyR coordinates for a half-court place the basket at the bottom-center.
+  geom_basketball(
+    league = "FIBA"
+    # display_range = "offense",
+    # court_units = "m" # Ensure the court is drawn in meters
+  ) +
+  
+  # Add the shot locations using the scaled coordinates
+  geom_point(
+    aes(
+      x = x_coord_meter, 
+      y = y_coord_meter, 
+      color = made # Example of coloring points by a variable
+    ),
+    alpha = 0.6, # Make points slightly transparent
+    size = 2
+  ) +
+  
+  # Set the aspect ratio to 1:1 so the court lines look correct
+  coord_fixed() + 
+  
+  # Add labels and a title
+  labs(
+    title = "NBL Shot Locations",
+    subtitle = "Scaled from 0-100 to FIBA Half-Court (Meters)",
+    x = "Court Width (m)",
+    y = "Court Length (m)",
+    color = "Shot Made"
+  ) +
+  
+  # Apply a clean theme
+  theme_minimal() +
+  
+  # Optional: Customize the plot's appearance
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+
+# Print the plot object
+print(court_plot)
+
+
+
+
+
 
 
 
