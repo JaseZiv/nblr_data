@@ -5,7 +5,8 @@ current_season <- "2025-2026"
 # there is a game that the json structure is different for, and it's causing all sorts of headaches...
 # for now I'll remove it, knowing that it'll need to be fixed somehow:
 bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69185882ba54", "b20bc78d-4bef-11f0-9d84-e3ab37cba7df", 
-             "b22c940a-4bef-11f0-b917-b31681696f40", "b204326e-4bef-11f0-a4c0-7d8c00260a69", "b2317162-4bef-11f0-b94a-2b5bbafc199b")
+             "b22c940a-4bef-11f0-b917-b31681696f40", "b204326e-4bef-11f0-a4c0-7d8c00260a69", "b2317162-4bef-11f0-b94a-2b5bbafc199b",
+             "b21aeb47-4bef-11f0-be7c-3fd9cdc8f1b9", "b217a699-4bef-11f0-bc08-933162362355", "b225ec91-4bef-11f0-ab26-f7367f0af8fe")
 
 player_meta <- all_season |> 
   # head(1) |> 
