@@ -50,6 +50,8 @@ if(any(grepl("live_match_data", names(all_season)))) {
 }
 
 all_season <- all_season |> 
+  mutate(home_score = as.character(home_score),
+         away_score = as.character(away_score)) |> 
   filter(match_status == "complete") |> 
   select(-statistics_variance)
 
