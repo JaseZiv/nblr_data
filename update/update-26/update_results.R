@@ -40,7 +40,9 @@ n_games_to_scrape <- 5
 
 for(each_id in 1:n_games_to_scrape) {
   print(paste0("scraping id ", each_id, " of ", n_games_to_scrape))
-  each <- get_each_match(new_matches[each_id])
+  each <- get_each_match(new_matches[each_id]) |> 
+    mutate(home_score = as.character(home_score),
+           away_score = as.character(away_score)) 
   all_season <- bind_rows(all_season, each)
   
 }
@@ -50,9 +52,8 @@ if(any(grepl("live_match_data", names(all_season)))) {
 }
 
 all_season <- all_season |> 
-  mutate(home_score = as.character(home_score),
-         away_score = as.character(away_score)) |> 
-  filter(match_status == "complete") |> 
+  filter(match_status == "complete",
+         status == "CONFIRMED") |> 
   select(-statistics_variance)
 
 all_season <- bind_rows(
