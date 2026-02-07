@@ -56,6 +56,8 @@ all_season <- all_season |>
          status == "CONFIRMED") |> 
   select(-statistics_variance)
 
+all_season$match_facts$top_performers$minutes$value <- NULL
+
 all_season <- bind_rows(
   all_season_existing |> mutate(id = external_id) |> filter(!id %in% all_season$id),
   all_season
