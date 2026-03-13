@@ -10,7 +10,8 @@ team_box <- all_season |>
   filter(missing > 0) |> select(-missing) |>  
   mutate(team_match_statistics = map(team_match_statistics, ~ select(.x, -match))) |>
   unnest(team_match_statistics, names_sep = "_") |> 
-  unnest()
+  unnest() |> 
+  select(-turnovers)
 
 
 # $ opp_name                  <chr> "New Zealand Breaker…

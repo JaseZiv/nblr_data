@@ -42,7 +42,8 @@ for(each_id in 1:n_games_to_scrape) {
   print(paste0("scraping id ", each_id, " of ", n_games_to_scrape))
   each <- get_each_match(new_matches[each_id]) |> 
     mutate(home_score = as.character(home_score),
-           away_score = as.character(away_score)) 
+           away_score = as.character(away_score),
+           current_period = as.character(current_period)) 
   all_season <- bind_rows(all_season, each)
   
 }
@@ -51,12 +52,14 @@ if(any(grepl("live_match_data", names(all_season)))) {
   all_season <- all_season |> select(-live_match_data)
 }
 
+if(any(grepl("match_facts", names(all_season)))) {
+  all_season <- all_season |> select(-match_facts)
+}
+
 all_season <- all_season |> 
   filter(match_status == "complete",
          status == "CONFIRMED") |> 
   select(-statistics_variance)
-
-all_season$match_facts$top_performers$minutes$value <- NULL
 
 all_season <- bind_rows(
   all_season_existing |> mutate(id = external_id) |> filter(!id %in% all_season$id),

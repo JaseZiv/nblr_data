@@ -11,7 +11,8 @@ player_box <- all_season |>
   mutate(player_match_statistics = map(player_match_statistics, ~ select(.x, -match))) |>
   mutate(player_match_statistics = map(player_match_statistics, ~ mutate(.x, field_goals_made = as.integer(field_goals_made)))) |> 
   unnest(player_match_statistics, names_sep = "_") |> 
-  unnest()
+  unnest() |> 
+  select(-starter, -player_match_statistics_active)
 
 
 existing_player_box <- nblR::nbl_box_player()
