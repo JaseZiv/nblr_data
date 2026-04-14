@@ -11,7 +11,8 @@ bad_pbp <- c("b1b1def4-4bef-11f0-8dce-5f21da19a0fe", "b1c59937-4bef-11f0-9850-69
              "b24b6e4c-4bef-11f0-baa2-55e0c73fcc94", "b27eb8e2-4bef-11f0-ad13-0f742927f015", "b261b75e-4bef-11f0-803a-bf4a75ed2375",
              "b264adb3-4bef-11f0-8f86-f7367f0af8fe", "b28fc609-4bef-11f0-8354-6bbf481c9dbd", "b28ce4e1-4bef-11f0-8285-750b2dd8cf1d",
              "b26f08e5-4bef-11f0-9b72-2b5bbafc199b", "b26aed8e-4bef-11f0-8d0b-7d8c00260a69", "b2a91b89-4bef-11f0-9702-0f125a33c37a",
-             "b27937e8-4bef-11f0-9b65-e7c335595f42", "b28e54da-4bef-11f0-86e2-abf05c51dbb7", "e63caa04-12a9-11f1-9db3-b7438687a6df")
+             "b27937e8-4bef-11f0-9b65-e7c335595f42", "b28e54da-4bef-11f0-86e2-abf05c51dbb7", "e63caa04-12a9-11f1-9db3-b7438687a6df",
+             "2f781bb9-18fe-11f1-be21-03773903b9b5")
 
 player_meta <- all_season |> 
   # head(1) |> 
